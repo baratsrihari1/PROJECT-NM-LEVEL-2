@@ -5,14 +5,12 @@ import numpy as np
 from PIL import Image
 import io
 
-# Load colors dataset
 @st.cache_data
 def load_colors():
     return pd.read_csv("colors.csv")
 
 colors_df = load_colors()
 
-# Function to find closest color name
 def get_color_name(R, G, B):
     minimum = float("inf")
     cname = None
@@ -23,7 +21,6 @@ def get_color_name(R, G, B):
             cname = colors_df.loc[i, "color_name"]
     return cname
 
-# Streamlit UI
 st.set_page_config(page_title="Color Detection App", layout="wide")
 st.title("🎨 Color Detection from Images")
 st.write("Upload an image and click anywhere to detect the color.")
