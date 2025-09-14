@@ -1,0 +1,56 @@
+import streamlit as st
+import pandas as pd
+import cv2
+import numpy as np
+from PIL import Image
+import io
+
+# Load colors dataset
+@st.cache_data
+def load_colors():
+    return pd.read_csv("colors.csv")
+
+colors_df = load_colors()
+
+# Function to find closest color name
+def get_color_name(R, G, B):
+    minimum = float("inf")
+    cname = None
+    for i in range(len(colors_df)):
+        d = abs(R - int(colors_df.loc[i, "R"])) + abs(G - int(colors_df.loc[i, "G"])) + abs(B - int(colors_df.loc[i, "B"]))
+        if d < minimum:
+            minimum = d
+            cname = colors_df.loc[i, "color_name"]
+    return cname
+
+# Streamlit UI
+st.set_page_config(page_title="Color Detection App", layout="wide")
+st.title("🎨 Color Detection from Images")
+st.write("Upload an image and click anywhere to detect the color.")
+
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+
+if uploaded_file:
+    image = Image.open(uploaded_file)
+    img = np.array(image)
+
+    st.image(img, caption="Uploaded Image", use_container_width=True)
+
+    st.write("👉 Select pixel coordinates below to detect color:")
+
+    x = st.number_input("X coordinate (width)", min_value=0, max_value=img.shape[1]-1, step=1)
+    y = st.number_input("Y coordinate (height)", min_value=0, max_value=img.shape[0]-1, step=1)
+
+    if st.button("Detect Color"):
+        pixel = img[int(y), int(x)]
+        R, G, B = int(pixel[0]), int(pixel[1]), int(pixel[2])
+
+        cname = get_color_name(R, G, B)
+
+        st.success(f"**Detected Color:** {cname}")
+        st.write(f"**RGB Values:** R={R}, G={G}, B={B}")
+
+        st.markdown(
+            f"<div style='width:150px;height:75px;background:rgb({R},{G},{B});border:2px solid black;'></div>",
+            unsafe_allow_html=True
+        )
